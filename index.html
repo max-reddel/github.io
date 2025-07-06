@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What's Your Consciousness Theory Distribution?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, #00ff88, #00ddff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .intro p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #b0b0b0;
+            max-width: 600px;
+            margin: 0 auto 1rem;
+        }
+
+        .creator {
+            font-size: 0.95rem;
+            color: #00ff88;
+            margin-bottom: 1.5rem;
+        }
+
+        .disclaimer {
+            font-size: 0.9rem;
+            color: #808080;
+            font-style: italic;
+            margin: 1.5rem auto;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            max-width: 500px;
+        }
+
+        .quiz-container {
+            display: none;
+        }
+
+        .question-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: none;
+        }
+
+        .question-card.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1);
+        }
+
+        .question-number {
+            color: #00ff88;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .answer-option {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .answer-option:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: rgba(0, 255, 136, 0.3);
+            transform: translateX(5px);
+        }
+
+        .answer-option.selected {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.5);
+        }
+
+        .answer-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .answer-option:hover::before {
+            left: 100%;
+        }
+
+        .term {
+            border-bottom: 1px dotted #00ff88;
+            cursor: help;
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: rgba(0, 0, 0, 0.95);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            width: max-content;
+            max-width: 250px;
+            white-space: normal;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            line-height: 1.4;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.95);
+        }
+
+        .term:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00ddff);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .start-button, .next-button, .download-button {
+            background: linear-gradient(45deg, #00ff88, #00ddff);
+            color: #0f0f23;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin: 2rem auto;
+            display: block;
+        }
+
+        .start-button:hover, .next-button:hover, .download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .next-button {
+            display: none;
+        }
+
+        .next-button.visible {
+            display: block;
+        }
+
+        .results {
+            display: none;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .theory-result {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .theory-name {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #00ff88;
+        }
+
+        .percentage-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .percentage-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00ddff);
+            border-radius: 15px;
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            min-width: 45px;
+        }
+
+        .percentage-text {
+            color: #0f0f23;
+            font-weight: bold;
+            white-space: nowrap;
+            padding: 0 5px;
+        }
+
+        #results-canvas {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .question-text {
+                font-size: 1.1rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .tooltip {
+                left: 10px;
+                transform: translateX(0) translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="intro">
+            <h1>What's Your Consciousness Theory Distribution?</h1>
+            <p class="creator">Created by Max Reddel</p>
+            <p>
+                Reading up on all the different theories of consciousness to figure out what you believe? That sounds... exhausting. Philosophy is quite a bit about exploring your intuitions (and resolving conflicting ones). So instead of diving into dense academic texts, let's start with your intuitions to identify what your favorite theories are. Then you can go explore those specific ones instead of reading all the theories.
+            </p>
+            <p>
+                Through 20 questions about everyday experiences and thought experiments, we'll calculate your belief distribution across major theories of consciousness. Think of it as discovering which philosophical camps you're already in—without the reading list.
+            </p>
+            <div class="disclaimer">
+                Disclaimer: This is just a fun tool to explore some intuitions. There are definitely ways to improve it, but I wanted to have a functional version to share. Take your results with a grain of salt!
+            </div>
+            <button class="start-button" onclick="startQuiz()">Begin the Quiz</button>
+        </div>
+
+        <div class="quiz-container">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            
+            <div id="questions"></div>
+            
+            <button class="next-button" onclick="nextQuestion()">Next Question</button>
+        </div>
+
+        <div class="results">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Your Consciousness Theory Distribution</h2>
+            <div id="results-container"></div>
+            <button class="download-button" onclick="downloadResults()">Download Results as Image</button>
+        </div>
+    </div>
+
+    <canvas id="results-canvas"></canvas>
+
+    <script>
+        const questions = [
+            {
+                question: "When you see a robot vacuum bump into a wall and change direction, what's your first thought?",
+                answers: [
+                    { text: "It's just following programmed responses.", theory: "eliminative" },
+                    { text: "There might be a tiny spark of experience there.", theory: "panpsychism" },
+                    { text: "It's processing information, but not consciously.", theory: "functionalism" },
+                    { text: "Without biology, there's definitely no awareness.", theory: "biological" },
+                    { text: "Hard to say what's really going on in there.", theory: "misc" }
+                ]
+            },
+            {
+                question: "If scientists could perfectly simulate your brain in a computer, would that simulation be conscious?",
+                answers: [
+                    { text: "Yes, if it processes information like I do.", theory: "functionalism" },
+                    { text: "No, consciousness needs biological matter.", theory: "biological" },
+                    { text: "Yes, it's all just physical processes anyway.", theory: "physicalism" },
+                    { text: "Maybe, but it would be fundamentally different.", theory: "dualism" },
+                    { text: "This question might be unanswerable.", theory: "misc" }
+                ]
+            },
+            {
+                question: "What happens to your consciousness during dreamless sleep?",
+                answers: [
+                    { text: "It temporarily ceases to exist.", theory: "physicalism" },
+                    { text: "It continues in a minimal form.", theory: "panpsychism" },
+                    { text: "The substrate remains but processing stops.", theory: "functionalism" },
+                    { text: "Something non-physical persists.", theory: "dualism" },
+                    { text: "Consciousness emerges again when I wake.", theory: "emergentism" }
+                ]
+            },
+            {
+                question: "Could a sufficiently complex arrangement of dominoes falling have experiences?",
+                answers: [
+                    { text: "Absolutely not, that's absurd.", theory: "biological" },
+                    { text: "If it implements the right computations, yes.", theory: "functionalism" },
+                    { text: "Each domino might have micro-experiences.", theory: "panpsychism" },
+                    { text: "No, it lacks the right physical properties.", theory: "physicalism" },
+                    { text: "The question reveals our confusion about consciousness.", theory: "eliminative" }
+                ]
+            },
+            {
+                question: "Why do you think general anesthesia makes you unconscious?",
+                answers: [
+                    { text: "It disrupts the brain's physical processes.", theory: "physicalism" },
+                    { text: "It interrupts biological mechanisms unique to life.", theory: "biological" },
+                    { text: "It prevents higher-order thoughts (thoughts about your own thoughts).", theory: "higher-order" },
+                    { text: "It blocks the connection between mind and body.", theory: "dualism" },
+                    { text: "It disrupts the complex emergence of awareness.", theory: "emergentism" }
+                ]
+            },
+            {
+                question: "What's fundamentally real: matter or consciousness?",
+                answers: [
+                    { text: "Matter is fundamental, consciousness emerges from it.", theory: "physicalism" },
+                    { text: "Consciousness is fundamental, matter is how it appears.", theory: "idealism" },
+                    { text: "Both are equally fundamental.", theory: "dualism" },
+                    { text: "Neither - they're both constructs we use.", theory: "eliminative" },
+                    { text: "This might be a false dichotomy.", theory: "misc" }
+                ]
+            },
+            {
+                question: "What's the relationship between your brain and your experience of red?",
+                answers: [
+                    { text: "The experience IS the brain activity.", theory: "identity" },
+                    { text: "Brain activity causes a separate mental experience.", theory: "dualism" },
+                    { text: "I become aware of red by thinking about seeing red (higher-order awareness).", theory: "higher-order" },
+                    { text: "Living neural tissue creates qualia.", theory: "biological" },
+                    { text: "Red emerges from complex neural interactions.", theory: "emergentism" }
+                ]
+            },
+            {
+                question: "Could a plant have some form of consciousness?",
+                answers: [
+                    { text: "Yes, everything has some degree of experience.", theory: "panpsychism" },
+                    { text: "No, they lack nervous systems.", theory: "biological" },
+                    { text: "No, they can't have thoughts about their own states (no meta-cognition).", theory: "higher-order" },
+                    { text: "No, they lack the necessary brain structures.", theory: "physicalism" },
+                    { text: "They might embody awareness through their interactions.", theory: "enactivism" }
+                ]
+            },
+            {
+                question: "How does consciousness relate to the body's interaction with its environment?",
+                answers: [
+                    { text: "Consciousness emerges from brain-body-world interactions.", theory: "enactivism" },
+                    { text: "The brain generates consciousness independently.", theory: "physicalism" },
+                    { text: "Consciousness uses the body as a tool.", theory: "dualism" },
+                    { text: "Environment shapes but doesn't constitute consciousness.", theory: "functionalism" },
+                    { text: "All reality, including the environment, is mental.", theory: "idealism" }
+                ]
+            },
+            {
+                question: "Why can't you experience what chocolate tastes like to someone else?",
+                answers: [
+                    { text: "Because you can't access their physical brain states.", theory: "identity" },
+                    { text: "Because consciousness is fundamentally private.", theory: "dualism" },
+                    { text: "Because experience is enacted through individual bodies.", theory: "enactivism" },
+                    { text: "Because subjective experience is tied to individual biology.", theory: "biological" },
+                    { text: "'Experience' is just a useful fiction we've created.", theory: "eliminative" }
+                ]
+            },
+            {
+                question: "Could the entire universe be conscious as a whole?",
+                answers: [
+                    { text: "Yes, it's all interconnected experience.", theory: "panpsychism" },
+                    { text: "Yes, the universe is fundamentally mental.", theory: "idealism" },
+                    { text: "No, only biological systems can be conscious.", theory: "biological" },
+                    { text: "No, it can't have higher-order thoughts (awareness of its own mental states).", theory: "higher-order" },
+                    { text: "No, consciousness only emerges at certain scales.", theory: "emergentism" }
+                ]
+            },
+            {
+                question: "What makes the difference between being awake and being in a coma?",
+                answers: [
+                    { text: "The ability to have thoughts about your mental states.", theory: "higher-order" },
+                    { text: "Whether biological processes are functioning.", theory: "biological" },
+                    { text: "The specific physical state of the brain.", theory: "identity" },
+                    { text: "Whether complex awareness has emerged.", theory: "emergentism" },
+                    { text: "The degree of embodied engagement with the world.", theory: "enactivism" }
+                ]
+            },
+            {
+                question: "Could a <span class='term'>philosophical zombie<span class='tooltip'>A being that acts exactly like a conscious person but has no inner experience.</span></span> exist?",
+                answers: [
+                    { text: "No, the behavior would BE the consciousness.", theory: "eliminative" },
+                    { text: "No, the physical facts determine everything.", theory: "physicalism" },
+                    { text: "Yes, consciousness is something extra.", theory: "dualism" },
+                    { text: "No, if it can report on its states, it's conscious.", theory: "higher-order" },
+                    { text: "The concept might be incoherent.", theory: "misc" }
+                ]
+            },
+            {
+                question: "Do you think a beehive has a collective consciousness?",
+                answers: [
+                    { text: "No, only individual organisms can be conscious.", theory: "biological" },
+                    { text: "Possibly, if it has integrated information processing.", theory: "functionalism" },
+                    { text: "Yes, new properties emerge from the collective.", theory: "emergentism" },
+                    { text: "No, it lacks the right physical unity.", theory: "identity" },
+                    { text: "Perhaps, through its collective embodied actions.", theory: "enactivism" }
+                ]
+            },
+            {
+                question: "What's happening when you 'lose yourself' in an activity?",
+                answers: [
+                    { text: "Your self-reflective thoughts temporarily cease.", theory: "higher-order" },
+                    { text: "You're fully embodied in the action.", theory: "enactivism" },
+                    { text: "Your consciousness merges with the activity.", theory: "idealism" },
+                    { text: "Neural self-monitoring decreases.", theory: "physicalism" },
+                    { text: "The illusion of self temporarily dissolves.", theory: "eliminative" }
+                ]
+            },
+            {
+                question: "Could consciousness exist without any <span class='term'>physical substrate<span class='tooltip'>The material foundation or basis (like brain tissue) that supports or enables something.</span></span>?",
+                answers: [
+                    { text: "Yes, consciousness is fundamentally non-physical.", theory: "dualism" },
+                    { text: "Yes, physical reality is actually mental.", theory: "idealism" },
+                    { text: "No, it's identical to physical processes.", theory: "identity" },
+                    { text: "No, it emerges from complex physical systems.", theory: "emergentism" },
+                    { text: "The question assumes consciousness exists.", theory: "eliminative" }
+                ]
+            },
+            {
+                question: "Why does <span class='term'>split-brain<span class='tooltip'>A condition where the connection between brain hemispheres is severed, sometimes creating two streams of consciousness.</span></span> surgery seem to create two consciousnesses?",
+                answers: [
+                    { text: "It disrupts information integration between hemispheres.", theory: "functionalism" },
+                    { text: "Each hemisphere can have its own higher-order thoughts.", theory: "higher-order" },
+                    { text: "It reveals that unity is constructed, not given.", theory: "idealism" },
+                    { text: "It disrupts the biological unity of the brain.", theory: "biological" },
+                    { text: "It shows 'unified consciousness' is an illusion.", theory: "eliminative" }
+                ]
+            },
+            {
+                question: "Could a future AI suffer?",
+                answers: [
+                    { text: "Yes, if it has the right functional states.", theory: "functionalism" },
+                    { text: "Yes, if it can think about its own pain states.", theory: "higher-order" },
+                    { text: "Only if built from the right materials.", theory: "identity" },
+                    { text: "No, suffering is a biological phenomenon.", theory: "biological" },
+                    { text: "Suffering emerges from complex self-organization.", theory: "emergentism" }
+                ]
+            },
+            {
+                question: "What determines the boundary of your consciousness?",
+                answers: [
+                    { text: "The physical boundaries of your brain.", theory: "identity" },
+                    { text: "The extent of your embodied interactions.", theory: "enactivism" },
+                    { text: "What you can have higher-order thoughts about.", theory: "higher-order" },
+                    { text: "Nothing - all boundaries are mental constructs.", theory: "idealism" },
+                    { text: "There are no real boundaries to find.", theory: "eliminative" }
+                ]
+            },
+            {
+                question: "How do you know other people are conscious?",
+                answers: [
+                    { text: "I infer it from their behavior and biology.", theory: "biological" },
+                    { text: "We participate in shared mental reality.", theory: "idealism" },
+                    { text: "They can report on their mental states.", theory: "higher-order" },
+                    { text: "Through embodied interaction and empathy.", theory: "enactivism" },
+                    { text: "I don't - 'consciousness' is a folk concept.", theory: "eliminative" }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let selectedAnswer = null;
+        let scores = {
+            physicalism: 0,
+            functionalism: 0,
+            dualism: 0,
+            biological: 0,
+            panpsychism: 0,
+            idealism: 0,
+            enactivism: 0,
+            emergentism: 0,
+            eliminative: 0,
+            'higher-order': 0,
+            identity: 0,
+            misc: 0
+        };
+
+        function startQuiz() {
+            document.querySelector('.intro').style.display = 'none';
+            document.querySelector('.quiz-container').style.display = 'block';
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('questions');
+            const q = questions[currentQuestion];
+            selectedAnswer = null;
+            
+            container.innerHTML = `
+                <div class="question-card active">
+                    <div class="question-number">Question ${currentQuestion + 1} of ${questions.length}</div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="answers">
+                        ${q.answers.map((answer, index) => `
+                            <div class="answer-option" data-theory="${answer.theory}" onclick="selectAnswer('${answer.theory}', this)">
+                                ${answer.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            updateProgress();
+            document.querySelector('.next-button').classList.remove('visible');
+        }
+
+        function selectAnswer(theory, element) {
+            // Remove previous selection
+            document.querySelectorAll('.answer-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selection to clicked element
+            element.classList.add('selected');
+            selectedAnswer = theory;
+            
+            // Show next button
+            document.querySelector('.next-button').classList.add('visible');
+        }
+
+        function nextQuestion() {
+            if (selectedAnswer) {
+                scores[selectedAnswer] += 1;
+                currentQuestion++;
+                
+                if (currentQuestion < questions.length) {
+                    renderQuestion();
+                } else {
+                    showResults();
+                }
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.querySelector('.progress-fill').style.width = progress + '%';
+        }
+
+        function showResults() {
+            document.querySelector('.quiz-container').style.display = 'none';
+            document.querySelector('.results').style.display = 'block';
+            
+            // Calculate percentages
+            const total = Object.values(scores).reduce((a, b) => a + b, 0);
+            const percentages = {};
+            for (let theory in scores) {
+                percentages[theory] = Math.round((scores[theory] / total) * 100);
+            }
+            
+            // Theory names and descriptions
+            const theoryInfo = {
+                physicalism: "Physicalism: consciousness is purely physical brain activity",
+                functionalism: "Functionalism: consciousness is information processing",
+                dualism: "Dualism: consciousness is non-physical",
+                biological: "Biological Naturalism: consciousness requires living systems",
+                panpsychism: "Panpsychism: consciousness is a fundamental property",
+                idealism: "Idealism: reality is fundamentally mental/conscious",
+                enactivism: "Enactivism: consciousness emerges through embodied action",
+                emergentism: "Emergentism: consciousness emerges from complex systems",
+                eliminative: "Eliminative Materialism: consciousness is an illusion",
+                'higher-order': "Higher-Order Theories: consciousness is thoughts about thoughts",
+                identity: "Identity Theory: mental states are brain states",
+                misc: "Other/Unknown: unconventional or undecided views"
+            };
+            
+            // Sort by percentage (but keep all theories)
+            const sorted = Object.entries(percentages).sort((a, b) => b[1] - a[1]);
+            
+            const resultsHTML = sorted.map(([theory, percentage]) => {
+                return `
+                    <div class="theory-result">
+                        <div class="theory-name">${theoryInfo[theory]}</div>
+                        <div class="percentage-bar">
+                            <div class="percentage-fill" style="width: ${Math.max(percentage, 5)}%">
+                                <span class="percentage-text">${percentage}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('results-container').innerHTML = resultsHTML;
+            
+            // Store results globally for download function
+            window.quizResults = { scores, percentages, sorted };
+            
+            // Animate the bars
+            setTimeout(() => {
+                document.querySelectorAll('.percentage-fill').forEach((bar, index) => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 100 + index * 50);
+                });
+            }, 100);
+        }
+
+        function downloadResults() {
+            const canvas = document.getElementById('results-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = 900;
+            const theories = window.quizResults.sorted;
+            canvas.height = 100 + (theories.length * 45) + 60;
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#0f0f23');
+            gradient.addColorStop(1, '#1a1a3e');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Title
+            ctx.font = 'bold 32px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+            ctx.fillStyle = '#00ff88';
+            ctx.textAlign = 'center';
+            ctx.fillText('Your Consciousness Theory Distribution', canvas.width / 2, 50);
+            
+            // Theory labels
+            const labels = {
+                physicalism: "Physicalism",
+                functionalism: "Functionalism",
+                dualism: "Dualism",
+                biological: "Biological Naturalism",
+                panpsychism: "Panpsychism",
+                idealism: "Idealism",
+                enactivism: "Enactivism",
+                emergentism: "Emergentism",
+                eliminative: "Eliminative Materialism",
+                'higher-order': "Higher-Order Theories",
+                identity: "Identity Theory",
+                misc: "Other/Unknown"
+            };
+            
+            // Draw results
+            let y = 100;
+            theories.forEach(([theory, percentage]) => {
+                // Theory name
+                ctx.font = '18px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+                ctx.fillStyle = '#e0e0e0';
+                ctx.textAlign = 'left';
+                ctx.fillText(labels[theory], 50, y);
+                
+                // Percentage bar background
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.fillRect(50, y + 10, 700, 25);
+                
+                // Percentage bar fill
+                const barGradient = ctx.createLinearGradient(50, y + 10, 750, y + 35);
+                barGradient.addColorStop(0, '#00ff88');
+                barGradient.addColorStop(1, '#00ddff');
+                ctx.fillStyle = barGradient;
+                const barWidth = Math.max((700 * percentage) / 100, 45); // Minimum width for text
+                ctx.fillRect(50, y + 10, barWidth, 25);
+                
+                // Percentage text
+                ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+                ctx.fillStyle = '#0f0f23';
+                ctx.textAlign = 'right';
+                const textX = 50 + barWidth - 10;
+                ctx.fillText(percentage + '%', textX, y + 28);
+                
+                y += 45;
+            });
+            
+            // Footer
+            ctx.font = '14px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+            ctx.fillStyle = '#808080';
+            ctx.textAlign = 'center';
+            ctx.fillText('Created by Max Reddel', canvas.width / 2, canvas.height - 20);
+            
+            // Download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'consciousness-theory-distribution.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        }
+    </script>
+</body>
+</html>
