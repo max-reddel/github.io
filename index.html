@@ -796,9 +796,9 @@
             const ctx = canvas.getContext('2d');
             
             // Set canvas size
-            canvas.width = 1400;
+            canvas.width = 1200;
             const theories = window.quizResults.sorted;
-            canvas.height = 180 + (theories.length * 70) + 100;
+            canvas.height = 150 + (theories.length * 85) + 80;
             
             // Background gradient
             const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -808,50 +808,73 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Title
-            ctx.font = 'bold 48px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+            ctx.font = 'bold 42px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
             const titleGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
             titleGradient.addColorStop(0, '#00ff88');
             titleGradient.addColorStop(1, '#00ddff');
             ctx.fillStyle = titleGradient;
             ctx.textAlign = 'center';
-            ctx.fillText('Your Consciousness Theory Distribution', canvas.width / 2, 80);
+            ctx.fillText('Your Consciousness Theory Distribution', canvas.width / 2, 70);
             
             // Draw results
-            let y = 160;
+            let y = 140;
             theories.forEach(([theory, percentage]) => {
                 // Theory name
-                ctx.font = '22px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
-                ctx.fillStyle = '#ffffff';
+                ctx.font = '20px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+                ctx.fillStyle = '#00ff88';
                 ctx.textAlign = 'left';
-                ctx.fillText(theoryInfo[theory], 80, y);
+                ctx.fillText(theoryInfo[theory], 60, y);
+                
+                // Move down for the bar
+                y += 30;
                 
                 // Percentage bar background
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                ctx.fillRect(80, y + 15, 1000, 35);
+                ctx.roundRect(60, y, 1080, 24, 12);
+                ctx.fill();
                 
                 // Percentage bar fill
-                const barGradient = ctx.createLinearGradient(80, y + 15, 1080, y + 50);
+                const barGradient = ctx.createLinearGradient(60, y, 1140, y + 24);
                 barGradient.addColorStop(0, '#00ff88');
                 barGradient.addColorStop(1, '#00ddff');
                 ctx.fillStyle = barGradient;
-                const barWidth = Math.max((1000 * percentage) / 100, 70); // Minimum width for text
-                ctx.fillRect(80, y + 15, barWidth, 35);
+                const barWidth = Math.max((1080 * percentage) / 100, 50);
+                ctx.roundRect(60, y, barWidth, 24, 12);
+                ctx.fill();
                 
-                // Percentage text - positioned outside the bar for clarity
-                ctx.font = 'bold 24px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
-                ctx.fillStyle = '#ffffff';
-                ctx.textAlign = 'left';
-                const textX = 1100;
-                ctx.fillText(percentage + '%', textX, y + 40);
+                // Percentage text inside the bar
+                ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+                ctx.fillStyle = '#0f0f23';
+                ctx.textAlign = 'center';
+                const textX = 60 + Math.min(barWidth / 2, barWidth - 25);
+                ctx.fillText(percentage + '%', textX, y + 17);
                 
-                y += 70;
+                // Add extra spacing before next item
+                y += 55;
             });
             
             // Footer
-            ctx.font = '18px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+            ctx.font = '16px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
             ctx.fillStyle = '#808080';
             ctx.textAlign = 'center';
-            ctx.fillText('Created by Max Reddel', canvas.width / 2, canvas.height - 40);
+            ctx.fillText('Created by Max Reddel', canvas.width / 2, canvas.height - 30);
+            
+            // Add roundRect method if not available
+            if (!ctx.roundRect) {
+                ctx.roundRect = function(x, y, width, height, radius) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + radius, y);
+                    ctx.lineTo(x + width - radius, y);
+                    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+                    ctx.lineTo(x + width, y + height - radius);
+                    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                    ctx.lineTo(x + radius, y + height);
+                    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+                    ctx.lineTo(x, y + radius);
+                    ctx.quadraticCurveTo(x, y, x + radius, y);
+                    ctx.closePath();
+                };
+            }
             
             // Download
             canvas.toBlob(function(blob) {
