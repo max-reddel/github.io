@@ -761,7 +761,7 @@
             
             const resultsHTML = sorted.map(([theory, percentage]) => {
                 return `
-                    <div class="mini-theory-result">
+                    <div class="mini-theory-result" style="margin-bottom: 1.5rem;">
                         <div class="theory-name" style="font-size: 1.1rem; color: #00ff88; margin-bottom: 0.5rem;">${theoryInfo[theory]}</div>
                         <div class="mini-percentage-bar" style="height: 24px;">
                             <div class="mini-percentage-fill" style="width: ${Math.max(percentage, 5)}%">
@@ -798,7 +798,7 @@
             // Set canvas size
             canvas.width = 1200;
             const theories = window.quizResults.sorted;
-            canvas.height = 150 + (theories.length * 85) + 80;
+            canvas.height = 150 + (theories.length * 100) + 80;
             
             // Background gradient
             const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -830,8 +830,7 @@
                 
                 // Percentage bar background
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                ctx.roundRect(60, y, 1080, 24, 12);
-                ctx.fill();
+                ctx.fillRect(60, y, 1080, 24);
                 
                 // Percentage bar fill
                 const barGradient = ctx.createLinearGradient(60, y, 1140, y + 24);
@@ -839,18 +838,25 @@
                 barGradient.addColorStop(1, '#00ddff');
                 ctx.fillStyle = barGradient;
                 const barWidth = Math.max((1080 * percentage) / 100, 50);
-                ctx.roundRect(60, y, barWidth, 24, 12);
-                ctx.fill();
+                ctx.fillRect(60, y, barWidth, 24);
                 
-                // Percentage text inside the bar
-                ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+                // Percentage text with background for visibility
+                ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+                const textMetrics = ctx.measureText(percentage + '%');
+                const textX = 60 + Math.min(barWidth / 2, barWidth - 30);
+                const textY = y + 17;
+                
+                // White background for text
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillRect(textX - textMetrics.width/2 - 4, textY - 12, textMetrics.width + 8, 16);
+                
+                // Dark text
                 ctx.fillStyle = '#0f0f23';
                 ctx.textAlign = 'center';
-                const textX = 60 + Math.min(barWidth / 2, barWidth - 25);
-                ctx.fillText(percentage + '%', textX, y + 17);
+                ctx.fillText(percentage + '%', textX, textY);
                 
-                // Add extra spacing before next item
-                y += 55;
+                // Add extra spacing before next item (increased from 55 to 70)
+                y += 70;
             });
             
             // Footer
@@ -858,23 +864,6 @@
             ctx.fillStyle = '#808080';
             ctx.textAlign = 'center';
             ctx.fillText('Created by Max Reddel', canvas.width / 2, canvas.height - 30);
-            
-            // Add roundRect method if not available
-            if (!ctx.roundRect) {
-                ctx.roundRect = function(x, y, width, height, radius) {
-                    ctx.beginPath();
-                    ctx.moveTo(x + radius, y);
-                    ctx.lineTo(x + width - radius, y);
-                    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-                    ctx.lineTo(x + width, y + height - radius);
-                    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-                    ctx.lineTo(x + radius, y + height);
-                    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-                    ctx.lineTo(x, y + radius);
-                    ctx.quadraticCurveTo(x, y, x + radius, y);
-                    ctx.closePath();
-                };
-            }
             
             // Download
             canvas.toBlob(function(blob) {
