@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>What's Your Consciousness Theory Distribution?</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -791,29 +791,45 @@
         }
 
         function downloadResults() {
-            // Use html2canvas to capture the results div
+            // Use dom-to-image to capture the results div
             const resultsElement = document.querySelector('.results');
             
-            html2canvas(resultsElement, {
-                backgroundColor: '#0f0f23',
-                scale: 2, // Higher quality
-                logging: false,
-                useCORS: true,
-                windowWidth: resultsElement.scrollWidth,
-                windowHeight: resultsElement.scrollHeight
-            }).then(canvas => {
-                // Convert to blob and download
-                canvas.toBlob(function(blob) {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'consciousness-theory-distribution.png';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 'image/png');
-            });
+            // Set options for better quality
+            const scale = 2;
+            const options = {
+                quality: 1,
+                width: resultsElement.offsetWidth * scale,
+                height: resultsElement.offsetHeight * scale,
+                style: {
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'top left',
+                    width: resultsElement.offsetWidth + 'px',
+                    height: resultsElement.offsetHeight + 'px'
+                },
+                bgcolor: '#0f0f23'
+            };
+            
+            domtoimage.toPng(resultsElement, options)
+                .then(function (dataUrl) {
+                    // Create a link and trigger download
+                    const link = document.createElement('a');
+                    link.download = 'consciousness-theory-distribution.png';
+                    link.href = dataUrl;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                })
+                .catch(function (error) {
+                    console.error('Screenshot failed:', error);
+                    // Fallback to simple version
+                    domtoimage.toPng(resultsElement)
+                        .then(function (dataUrl) {
+                            const link = document.createElement('a');
+                            link.download = 'consciousness-theory-distribution.png';
+                            link.href = dataUrl;
+                            link.click();
+                        });
+                });
         }
     </script>
 </body>
