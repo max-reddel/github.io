@@ -74,7 +74,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             padding: 2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             backdrop-filter: blur(10px);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: none;
@@ -194,7 +194,7 @@
             height: 4px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 2px;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             overflow: hidden;
         }
 
@@ -206,7 +206,60 @@
             width: 0%;
         }
 
-        .start-button, .next-button, .download-button {
+        .dynamic-results {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .dynamic-results h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #00ff88;
+            text-align: center;
+        }
+
+        .mini-theory-result {
+            margin-bottom: 0.5rem;
+        }
+
+        .mini-theory-name {
+            font-size: 0.85rem;
+            color: #b0b0b0;
+            margin-bottom: 0.2rem;
+        }
+
+        .mini-percentage-bar {
+            width: 100%;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .mini-percentage-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00ddff);
+            border-radius: 8px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 5px;
+            min-width: 35px;
+        }
+
+        .mini-percentage-text {
+            color: #0f0f23;
+            font-weight: bold;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        .start-button, .next-button, .download-button, .restart-button {
             background: linear-gradient(45deg, #00ff88, #00ddff);
             color: #0f0f23;
             border: none;
@@ -216,11 +269,11 @@
             border-radius: 8px;
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin: 2rem auto;
-            display: block;
+            margin: 1rem 0.5rem;
+            display: inline-block;
         }
 
-        .start-button:hover, .next-button:hover, .download-button:hover {
+        .start-button:hover, .next-button:hover, .download-button:hover, .restart-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
         }
@@ -231,6 +284,12 @@
 
         .next-button.visible {
             display: block;
+            margin: 1rem auto;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 2rem;
         }
 
         .results {
@@ -238,46 +297,11 @@
             animation: fadeIn 1s ease-out;
         }
 
-        .theory-result {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .theory-name {
+        .final-message {
+            text-align: center;
+            margin: 2rem 0;
             font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            color: #00ff88;
-        }
-
-        .percentage-bar {
-            width: 100%;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .percentage-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff88, #00ddff);
-            border-radius: 15px;
-            transition: width 1s ease;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 10px;
-            min-width: 45px;
-        }
-
-        .percentage-text {
-            color: #0f0f23;
-            font-weight: bold;
-            white-space: nowrap;
-            padding: 0 5px;
+            color: #b0b0b0;
         }
 
         #results-canvas {
@@ -351,12 +375,23 @@
             <div id="questions"></div>
             
             <button class="next-button" onclick="nextQuestion()">Next Question</button>
+
+            <div class="dynamic-results">
+                <h3>Current Distribution</h3>
+                <div id="dynamic-results-container"></div>
+            </div>
         </div>
 
         <div class="results">
             <h2 style="text-align: center; margin-bottom: 2rem;">Your Consciousness Theory Distribution</h2>
+            <div class="final-message">
+                Here's your final distribution! The theories you lean towards most are at the top.
+            </div>
             <div id="results-container"></div>
-            <button class="download-button" onclick="downloadResults()">Download Results as Image</button>
+            <div class="button-container">
+                <button class="download-button" onclick="downloadResults()">Download Results as Image</button>
+                <button class="restart-button" onclick="restartQuiz()">Start Over</button>
+            </div>
         </div>
     </div>
 
@@ -583,10 +618,42 @@
             misc: 0
         };
 
+        // Theory names and descriptions
+        const theoryInfo = {
+            physicalism: "Physicalism: consciousness is purely physical brain activity",
+            functionalism: "Functionalism: consciousness is information processing",
+            dualism: "Dualism: consciousness is non-physical",
+            biological: "Biological Naturalism: consciousness requires living systems",
+            panpsychism: "Panpsychism: consciousness is a fundamental property",
+            idealism: "Idealism: reality is fundamentally mental/conscious",
+            enactivism: "Enactivism: consciousness emerges through embodied action",
+            emergentism: "Emergentism: consciousness emerges from complex systems",
+            eliminative: "Eliminative Materialism: consciousness is an illusion",
+            'higher-order': "Higher-Order Theories: consciousness is thoughts about thoughts",
+            identity: "Identity Theory: mental states are brain states",
+            misc: "Other/Unknown: unconventional or undecided views"
+        };
+
+        const shortTheoryNames = {
+            physicalism: "Physicalism",
+            functionalism: "Functionalism",
+            dualism: "Dualism",
+            biological: "Biological Naturalism",
+            panpsychism: "Panpsychism",
+            idealism: "Idealism",
+            enactivism: "Enactivism",
+            emergentism: "Emergentism",
+            eliminative: "Eliminative Materialism",
+            'higher-order': "Higher-Order Theories",
+            identity: "Identity Theory",
+            misc: "Other/Unknown"
+        };
+
         function startQuiz() {
             document.querySelector('.intro').style.display = 'none';
             document.querySelector('.quiz-container').style.display = 'block';
             renderQuestion();
+            updateDynamicResults();
         }
 
         function renderQuestion() {
@@ -629,12 +696,13 @@
         function nextQuestion() {
             if (selectedAnswer) {
                 scores[selectedAnswer] += 1;
+                updateDynamicResults();
                 currentQuestion++;
                 
                 if (currentQuestion < questions.length) {
                     renderQuestion();
                 } else {
-                    showResults();
+                    showFinalResults();
                 }
             }
         }
@@ -644,85 +712,60 @@
             document.querySelector('.progress-fill').style.width = progress + '%';
         }
 
-        function showResults() {
+        function calculatePercentages() {
+            const total = currentQuestion || 1; // Avoid division by zero
+            const percentages = {};
+            
+            // Calculate raw percentages
+            for (let theory in scores) {
+                const rawPercentage = (scores[theory] / total) * 100;
+                percentages[theory] = Math.max(rawPercentage, 1); // Minimum 1%
+            }
+            
+            // Normalize to ensure sum is 100%
+            const sum = Object.values(percentages).reduce((a, b) => a + b, 0);
+            if (sum !== 100) {
+                const factor = 100 / sum;
+                for (let theory in percentages) {
+                    percentages[theory] = Math.round(percentages[theory] * factor);
+                }
+            }
+            
+            return percentages;
+        }
+
+        function updateDynamicResults() {
+            const percentages = calculatePercentages();
+            const sorted = Object.entries(percentages).sort((a, b) => b[1] - a[1]);
+            
+            const dynamicHTML = sorted.map(([theory, percentage]) => `
+                <div class="mini-theory-result">
+                    <div class="mini-theory-name">${shortTheoryNames[theory]}</div>
+                    <div class="mini-percentage-bar">
+                        <div class="mini-percentage-fill" style="width: ${Math.max(percentage, 8)}%">
+                            <span class="mini-percentage-text">${percentage}%</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('dynamic-results-container').innerHTML = dynamicHTML;
+        }
+
+        function showFinalResults() {
             document.querySelector('.quiz-container').style.display = 'none';
             document.querySelector('.results').style.display = 'block';
             
-            // Calculate percentages with 1% minimum
-            const total = Object.values(scores).reduce((a, b) => a + b, 0);
-            const rawPercentages = {};
-            const percentages = {};
-            
-            // First pass: calculate raw percentages
-            for (let theory in scores) {
-                rawPercentages[theory] = (scores[theory] / total) * 100;
-            }
-            
-            // Second pass: ensure minimum 1% and redistribute
-            let totalPercentage = 0;
-            let adjustmentNeeded = 0;
-            
-            for (let theory in rawPercentages) {
-                if (rawPercentages[theory] < 1 && rawPercentages[theory] > 0) {
-                    percentages[theory] = 1;
-                    adjustmentNeeded += (1 - rawPercentages[theory]);
-                } else if (rawPercentages[theory] === 0) {
-                    percentages[theory] = 1;
-                    adjustmentNeeded += 1;
-                } else {
-                    percentages[theory] = rawPercentages[theory];
-                }
-                totalPercentage += percentages[theory];
-            }
-            
-            // Redistribute to ensure total is 100%
-            if (adjustmentNeeded > 0) {
-                // Find theories with highest percentages to subtract from
-                const sortedTheories = Object.entries(percentages)
-                    .sort((a, b) => b[1] - a[1])
-                    .filter(([_, percentage]) => percentage > 1);
-                
-                let remaining = adjustmentNeeded;
-                for (let [theory, _] of sortedTheories) {
-                    if (remaining > 0 && percentages[theory] > 1) {
-                        const reduction = Math.min(remaining, percentages[theory] - 1);
-                        percentages[theory] -= reduction;
-                        remaining -= reduction;
-                    }
-                }
-            }
-            
-            // Final rounding to ensure exactly 100%
-            for (let theory in percentages) {
-                percentages[theory] = Math.round(percentages[theory]);
-            }
-            
-            // Theory names and descriptions
-            const theoryInfo = {
-                physicalism: "Physicalism: consciousness is purely physical brain activity",
-                functionalism: "Functionalism: consciousness is information processing",
-                dualism: "Dualism: consciousness is non-physical",
-                biological: "Biological Naturalism: consciousness requires living systems",
-                panpsychism: "Panpsychism: consciousness is a fundamental property",
-                idealism: "Idealism: reality is fundamentally mental/conscious",
-                enactivism: "Enactivism: consciousness emerges through embodied action",
-                emergentism: "Emergentism: consciousness emerges from complex systems",
-                eliminative: "Eliminative Materialism: consciousness is an illusion",
-                'higher-order': "Higher-Order Theories: consciousness is thoughts about thoughts",
-                identity: "Identity Theory: mental states are brain states",
-                misc: "Other/Unknown: unconventional or undecided views"
-            };
-            
-            // Sort by percentage (but keep all theories)
+            const percentages = calculatePercentages();
             const sorted = Object.entries(percentages).sort((a, b) => b[1] - a[1]);
             
             const resultsHTML = sorted.map(([theory, percentage]) => {
                 return `
-                    <div class="theory-result">
-                        <div class="theory-name">${theoryInfo[theory]}</div>
-                        <div class="percentage-bar">
-                            <div class="percentage-fill" style="width: ${Math.max(percentage, 5)}%">
-                                <span class="percentage-text">${percentage}%</span>
+                    <div class="mini-theory-result">
+                        <div class="theory-name" style="font-size: 1.1rem; color: #00ff88; margin-bottom: 0.5rem;">${theoryInfo[theory]}</div>
+                        <div class="mini-percentage-bar" style="height: 24px;">
+                            <div class="mini-percentage-fill" style="width: ${Math.max(percentage, 5)}%">
+                                <span class="mini-percentage-text" style="font-size: 0.9rem;">${percentage}%</span>
                             </div>
                         </div>
                     </div>
@@ -733,17 +776,19 @@
             
             // Store results globally for download function
             window.quizResults = { scores, percentages, sorted };
+        }
+
+        function restartQuiz() {
+            // Reset everything
+            currentQuestion = 0;
+            selectedAnswer = null;
+            for (let theory in scores) {
+                scores[theory] = 0;
+            }
             
-            // Animate the bars
-            setTimeout(() => {
-                document.querySelectorAll('.percentage-fill').forEach((bar, index) => {
-                    const width = bar.style.width;
-                    bar.style.width = '0%';
-                    setTimeout(() => {
-                        bar.style.width = width;
-                    }, 100 + index * 50);
-                });
-            }, 100);
+            // Hide results, show intro
+            document.querySelector('.results').style.display = 'none';
+            document.querySelector('.intro').style.display = 'block';
         }
 
         function downloadResults() {
@@ -751,9 +796,9 @@
             const ctx = canvas.getContext('2d');
             
             // Set canvas size
-            canvas.width = 1200;
+            canvas.width = 1400;
             const theories = window.quizResults.sorted;
-            canvas.height = 150 + (theories.length * 55) + 80;
+            canvas.height = 180 + (theories.length * 70) + 100;
             
             // Background gradient
             const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -763,69 +808,50 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Title
-            ctx.font = 'bold 42px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+            ctx.font = 'bold 48px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
             const titleGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
             titleGradient.addColorStop(0, '#00ff88');
             titleGradient.addColorStop(1, '#00ddff');
             ctx.fillStyle = titleGradient;
             ctx.textAlign = 'center';
-            ctx.fillText('Your Consciousness Theory Distribution', canvas.width / 2, 70);
-            
-            // Theory labels - full names
-            const labels = {
-                physicalism: "Physicalism: consciousness is purely physical brain activity",
-                functionalism: "Functionalism: consciousness is information processing",
-                dualism: "Dualism: consciousness is non-physical",
-                biological: "Biological Naturalism: consciousness requires living systems",
-                panpsychism: "Panpsychism: consciousness is a fundamental property",
-                idealism: "Idealism: reality is fundamentally mental/conscious",
-                enactivism: "Enactivism: consciousness emerges through embodied action",
-                emergentism: "Emergentism: consciousness emerges from complex systems",
-                eliminative: "Eliminative Materialism: consciousness is an illusion",
-                'higher-order': "Higher-Order Theories: consciousness is thoughts about thoughts",
-                identity: "Identity Theory: mental states are brain states",
-                misc: "Other/Unknown: unconventional or undecided views"
-            };
+            ctx.fillText('Your Consciousness Theory Distribution', canvas.width / 2, 80);
             
             // Draw results
-            let y = 140;
+            let y = 160;
             theories.forEach(([theory, percentage]) => {
                 // Theory name
-                ctx.font = '20px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+                ctx.font = '22px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
                 ctx.fillStyle = '#ffffff';
                 ctx.textAlign = 'left';
-                ctx.fillText(labels[theory], 60, y);
+                ctx.fillText(theoryInfo[theory], 80, y);
                 
                 // Percentage bar background
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                ctx.fillRect(60, y + 10, 900, 30);
+                ctx.fillRect(80, y + 15, 1000, 35);
                 
                 // Percentage bar fill
-                const barGradient = ctx.createLinearGradient(60, y + 10, 960, y + 40);
+                const barGradient = ctx.createLinearGradient(80, y + 15, 1080, y + 50);
                 barGradient.addColorStop(0, '#00ff88');
                 barGradient.addColorStop(1, '#00ddff');
                 ctx.fillStyle = barGradient;
-                const barWidth = Math.max((900 * percentage) / 100, 60); // Minimum width for text
-                ctx.fillRect(60, y + 10, barWidth, 30);
+                const barWidth = Math.max((1000 * percentage) / 100, 70); // Minimum width for text
+                ctx.fillRect(80, y + 15, barWidth, 35);
                 
-                // Percentage text - white on dark background for better contrast
-                ctx.font = 'bold 18px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+                // Percentage text - positioned outside the bar for clarity
+                ctx.font = 'bold 24px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
                 ctx.fillStyle = '#ffffff';
-                ctx.strokeStyle = '#0f0f23';
-                ctx.lineWidth = 3;
-                ctx.textAlign = 'right';
-                const textX = 60 + barWidth + 40;
-                ctx.strokeText(percentage + '%', textX, y + 32);
-                ctx.fillText(percentage + '%', textX, y + 32);
+                ctx.textAlign = 'left';
+                const textX = 1100;
+                ctx.fillText(percentage + '%', textX, y + 40);
                 
-                y += 55;
+                y += 70;
             });
             
             // Footer
-            ctx.font = '16px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+            ctx.font = '18px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
             ctx.fillStyle = '#808080';
             ctx.textAlign = 'center';
-            ctx.fillText('Created by Max Reddel', canvas.width / 2, canvas.height - 30);
+            ctx.fillText('Created by Max Reddel', canvas.width / 2, canvas.height - 40);
             
             // Download
             canvas.toBlob(function(blob) {
