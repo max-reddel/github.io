@@ -648,11 +648,53 @@
             document.querySelector('.quiz-container').style.display = 'none';
             document.querySelector('.results').style.display = 'block';
             
-            // Calculate percentages
+            // Calculate percentages with 1% minimum
             const total = Object.values(scores).reduce((a, b) => a + b, 0);
+            const rawPercentages = {};
             const percentages = {};
+            
+            // First pass: calculate raw percentages
             for (let theory in scores) {
-                percentages[theory] = Math.round((scores[theory] / total) * 100);
+                rawPercentages[theory] = (scores[theory] / total) * 100;
+            }
+            
+            // Second pass: ensure minimum 1% and redistribute
+            let totalPercentage = 0;
+            let adjustmentNeeded = 0;
+            
+            for (let theory in rawPercentages) {
+                if (rawPercentages[theory] < 1 && rawPercentages[theory] > 0) {
+                    percentages[theory] = 1;
+                    adjustmentNeeded += (1 - rawPercentages[theory]);
+                } else if (rawPercentages[theory] === 0) {
+                    percentages[theory] = 1;
+                    adjustmentNeeded += 1;
+                } else {
+                    percentages[theory] = rawPercentages[theory];
+                }
+                totalPercentage += percentages[theory];
+            }
+            
+            // Redistribute to ensure total is 100%
+            if (adjustmentNeeded > 0) {
+                // Find theories with highest percentages to subtract from
+                const sortedTheories = Object.entries(percentages)
+                    .sort((a, b) => b[1] - a[1])
+                    .filter(([_, percentage]) => percentage > 1);
+                
+                let remaining = adjustmentNeeded;
+                for (let [theory, _] of sortedTheories) {
+                    if (remaining > 0 && percentages[theory] > 1) {
+                        const reduction = Math.min(remaining, percentages[theory] - 1);
+                        percentages[theory] -= reduction;
+                        remaining -= reduction;
+                    }
+                }
+            }
+            
+            // Final rounding to ensure exactly 100%
+            for (let theory in percentages) {
+                percentages[theory] = Math.round(percentages[theory]);
             }
             
             // Theory names and descriptions
@@ -709,9 +751,9 @@
             const ctx = canvas.getContext('2d');
             
             // Set canvas size
-            canvas.width = 900;
+            canvas.width = 1200;
             const theories = window.quizResults.sorted;
-            canvas.height = 100 + (theories.length * 45) + 60;
+            canvas.height = 150 + (theories.length * 55) + 80;
             
             // Background gradient
             const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -721,27 +763,30 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Title
-            ctx.font = 'bold 32px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
-            ctx.fillStyle = '#00ff88';
+            ctx.font = 'bold 42px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+            const titleGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            titleGradient.addColorStop(0, '#00ff88');
+            titleGradient.addColorStop(1, '#00ddff');
+            ctx.fillStyle = titleGradient;
             ctx.textAlign = 'center';
-            ctx.fillText('Your Consciousness Theory Distribution', canvas.width / 2, 50);
+            ctx.fillText('Your Consciousness Theory Distribution', canvas.width / 2, 70);
             
-            // Theory labels
+            // Theory labels - full names
             const labels = {
-                physicalism: "Physicalism",
-                functionalism: "Functionalism",
-                dualism: "Dualism",
-                biological: "Biological Naturalism",
-                panpsychism: "Panpsychism",
-                idealism: "Idealism",
-                enactivism: "Enactivism",
-                emergentism: "Emergentism",
-                eliminative: "Eliminative Materialism",
-                'higher-order': "Higher-Order Theories",
-                identity: "Identity Theory",
-                misc: "Other/Unknown"
+                physicalism: "Physicalism: consciousness is purely physical brain activity",
+                functionalism: "Functionalism: consciousness is information processing",
+                dualism: "Dualism: consciousness is non-physical",
+                biological: "Biological Naturalism: consciousness requires living systems",
+                panpsychism: "Panpsychism: consciousness is a fundamental property",
+                idealism: "Idealism: reality is fundamentally mental/conscious",
+                enactivism: "Enactivism: consciousness emerges through embodied action",
+                emergentism: "Emergentism: consciousness emerges from complex systems",
+                eliminative: "Eliminative Materialism: consciousness is an illusion",
+                'higher-order': "Higher-Order Theories: consciousness is thoughts about thoughts",
+                identity: "Identity Theory: mental states are brain states",
+                misc: "Other/Unknown: unconventional or undecided views"
             };
-
+            
             // Draw results
             let y = 140;
             theories.forEach(([theory, percentage]) => {
