@@ -884,36 +884,21 @@
             const resultsElement = document.querySelector('.results');
             const buttonContainer = document.querySelector('.button-container');
             
-            // Hide buttons temporarily
+            // Store original styles
+            const originalPadding = resultsElement.style.padding;
+            const originalBackground = resultsElement.style.background;
+            
+            // Hide buttons and apply temporary styles
             buttonContainer.style.display = 'none';
+            resultsElement.style.padding = '40px';
+            resultsElement.style.background = 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%)';
             
-            // Create a temporary wrapper with gradient background and padding
-            const wrapper = document.createElement('div');
-            wrapper.style.cssText = `
-                background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
-                padding: 40px;
-                border-radius: 0;
-                position: absolute;
-                left: -9999px;
-                width: ${resultsElement.offsetWidth + 80}px;
-            `;
-            
-            // Clone the results content (without buttons)
-            const resultsClone = resultsElement.cloneNode(true);
-            resultsClone.querySelector('.button-container').remove();
-            
-            // Add the clone to wrapper and wrapper to body
-            wrapper.appendChild(resultsClone);
-            document.body.appendChild(wrapper);
-            
-            // Capture the wrapper
-            domtoimage.toPng(wrapper, {
+            // Capture with dom-to-image
+            domtoimage.toPng(resultsElement, {
                 quality: 1,
                 bgcolor: null, // Use the element's own background
-                style: {
-                    margin: 0,
-                    padding: 0
-                }
+                width: resultsElement.scrollWidth,
+                height: resultsElement.scrollHeight
             })
             .then(function (dataUrl) {
                 // Create a link and trigger download
@@ -924,14 +909,16 @@
                 link.click();
                 document.body.removeChild(link);
                 
-                // Clean up
-                document.body.removeChild(wrapper);
+                // Restore original styles
+                resultsElement.style.padding = originalPadding;
+                resultsElement.style.background = originalBackground;
                 buttonContainer.style.display = 'block';
             })
             .catch(function (error) {
                 console.error('Screenshot failed:', error);
-                // Clean up on error
-                document.body.removeChild(wrapper);
+                // Restore original styles on error
+                resultsElement.style.padding = originalPadding;
+                resultsElement.style.background = originalBackground;
                 buttonContainer.style.display = 'block';
             });
         }
